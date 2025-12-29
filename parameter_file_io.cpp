@@ -1,14 +1,14 @@
 /***********************  parameter_file_io.cpp   *****************************
 * Author:        Agner Fog
 * Date created:  2023-04-15
-* Last modified: 2024-10-13
-* Version:       3.002
+* Last modified: 2025-12-29
+* Version:       3.003
 * Project:       Altruist: Simulation of evolution in structured populations
 * Description:
 * This C++ file defines the procedures and lists for reading and writing 
 * parameter files.
 *
-* (c) Copyright 2024 Agner Fog.
+* (c) Copyright 2025 Agner Fog.
 * GNU General Public License, version 3.0 or later
 ******************************************************************************/
 
@@ -222,7 +222,7 @@ void Altruist::writeParameterFile(QString filename) {
     int8_t * field;                    // point to field in d
 
     // write header
-    snprintf(text, textlen, "[Altruist version %i.%i parameter file]\n", altruistMajorVersion, altruistMinorVersion);
+    snprintf(text, textlen, "[Altruist version %i.%03i parameter file]\n", altruistMajorVersion, altruistMinorVersion);
     file.write(text);
 
     // loop through two parameter lists, the global and the model-specific list

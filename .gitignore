@@ -1,0 +1,22 @@
+# Build artifacts (qmake / make)
+*.o
+.qmake.stash
+Makefile
+moc_*.cpp
+moc_*.h
+moc_predefs.h
+qrc_*.cpp
+ui_*.h
+Altruist.app/
+Altruist
+build/
+
+# Visual Studio
+*.user
+.vs/
+x64/
+Debug/
+Release/
+
+# macOS
+.DS_Store

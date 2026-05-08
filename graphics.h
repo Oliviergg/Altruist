@@ -13,6 +13,13 @@
 
 #pragma once
 
+// Pull in Qt declarations referenced below so the moc-generated TU compiles
+// without relying on stdafx.h being included first.
+#include <QtWidgets>
+
+class Altruist;
+struct AltruData;
+
 // values for graphicsType
 const int graphicsNone       = 0;                // no graphics display
 const int graphicsIslands    = 1;                // show 2-dimensionsl map of islands

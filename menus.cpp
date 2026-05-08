@@ -70,12 +70,21 @@ void Altruist::setupMenus() {
     zoom_in_action->setShortcut(Qt::ControlModifier | Qt::Key_Plus);
     zoom_out_action->setShortcut(Qt::ControlModifier | Qt::Key_Minus);
 
-    // menuBar() is defined in parent QMainWindow
+    // menuBar() is defined in parent QMainWindow.
+    // Note: on macOS, the native menu bar only renders QMenu children of the
+    // menu bar, never bare top-level QActions. So wrap "Model" and "Help"
+    // each in a one-item QMenu so they show up cross-platform.
     menuBar()->addMenu(&menuFile);
-    menuModel = menuBar()->addAction("&Model");
+    {
+        QMenu * modelMenu = menuBar()->addMenu("&Model");
+        menuModel = modelMenu->addAction("&Choose model...");
+    }
     menuBar()->addMenu(&menuParameters);
     menuBar()->addMenu(&menuRun);
-    menuHelp = menuBar()->addAction("&Help");
+    {
+        QMenu * helpMenu = menuBar()->addMenu("&Help");
+        menuHelp = helpMenu->addAction("&Manual...");
+    }
 
     // slot connections
     connect(load_action, &QAction::triggered,

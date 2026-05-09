@@ -1,18 +1,28 @@
-# Build artifacts (qmake / make)
+# Compiled object files
 *.o
-.qmake.stash
+*.obj
+
+# Qt build artifacts (qmake)
 Makefile
+.qmake.stash
 moc_*.cpp
 moc_*.h
 moc_predefs.h
 qrc_*.cpp
 ui_*.h
-Altruist.app/
-Altruist
+
+# All build outputs land in build/
 build/
 
+# macOS app bundles and debug symbols
+*.app/
+*.dSYM/
+
+# Profiling
+*.trace/
+
 # Visual Studio
-*.user
+*.vcxproj.user
 .vs/
 x64/
 Debug/

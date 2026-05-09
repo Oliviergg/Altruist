@@ -1,0 +1,64 @@
+[Altruist version 3.003 parameter file]
+
+[Model]
+model=Island model
+
+[Geography]
+totalArea=100
+maxNumGroups=64
+maxPerGroup=100
+carryingCapacity=100, 100
+carryingCapacityStandardDeviation=0
+maxTerritoryArea=0
+minTerritoryArea=0
+minGroupSize=2
+recolonizationGroupSize=4
+
+[Migration]
+migrationRate=0.01, 0.01
+emigrationPattern=0
+immigrationPattern=0
+recolonizationPattern=0
+migrationTopology=2
+
+[Loci]
+locusUsed=1, 0, 0, 0
+dominance=0, 0, 0, 0
+initialFractionOfMutant=0.1, 0, 0, 0
+mutationRates=0.001, 0.001, 0, 0, 0, 0, 0, 0
+
+[Individual fitness]
+individualFitness=1, 0.95, 1, 0.95, 1, 0.95, 1, 0.95
+extraLociFitness=1, 1, 1, 1
+growthRate=2
+selectionModel=0
+
+[Group properties]
+survivalRate=0.9
+warIntensity=0
+groupExtinctionRates=0.05, 0.05, 0.05, 0.05
+extinctionPattern=0
+warPattern=0
+groupFitnessFunction=0
+groupFitnessCurvature=1
+leaderAdvantage=0
+leaderSelection=0
+haystackPeriod=0
+mixingPeriod=0
+
+[Run control]
+randomSeed=42
+minimumGenerations=10
+maximumGenerations=2000
+stopCriterion=0
+stopCriterionDegree=0
+delayScreen=10
+sweepsUsed=0
+sweepType=0, 0, 0
+sweepParameter=0, 0, 0
+sweepStartValue=0, 0, 0
+sweepEndValue=0, 0, 0
+sweepStep=0, 0, 0
+
+[Output control]
+fileOutputOptions=0

@@ -556,37 +556,37 @@ GeographyDialogBox::GeographyDialogBox(Altruist *parent) :
     connect(&okButton, &QPushButton::clicked, [this, parent]() {
         // OK button. save parameters
 
-        if ((fieldsUsed1 & 1) && editTotArea.isModified()) {
+        if ((fieldsUsed1 & 1)) {
             parent->d.totArea = parent->readIntField(editTotArea);
         }
-        if ((fieldsUsed1 & 2) && editMaxIslands.isModified()) {
+        if ((fieldsUsed1 & 2)) {
             parent->d.maxIslands = parent->readIntField(editMaxIslands);
         }
-        if ((fieldsUsed1 & 4) && editMaxPerGroup.isModified()) {
+        if ((fieldsUsed1 & 4)) {
             parent->d.nMaxPerGroup = parent->readIntField(editMaxPerGroup);
         }
-        if ((fieldsUsed1 & 0x10) && editPopulationDensity0.isModified()) {
+        if ((fieldsUsed1 & 0x10)) {
             parent->d.carryingCapacity[0] = parent->readFloatField(editPopulationDensity0);
         }
-        if ((fieldsUsed1 & 0x20) && editPopulationDensity1.isModified()) {
+        if ((fieldsUsed1 & 0x20)) {
             parent->d.carryingCapacity[1] = parent->readFloatField(editPopulationDensity1);
         }
-        if ((fieldsUsed1 & 0x40) && editTerritorySizeMax.isModified()) {
+        if ((fieldsUsed1 & 0x40)) {
             parent->d.territorySizeMax = parent->readIntField(editTerritorySizeMax);
         }
-        if ((fieldsUsed1 & 0x80) && editTerritorySizeMin.isModified()) {
+        if ((fieldsUsed1 & 0x80)) {
             parent->d.territorySizeMin = parent->readIntField(editTerritorySizeMin);
         }
-        if ((fieldsUsed1 & 0x100) && editCapacityStdDev.isModified()) {
+        if ((fieldsUsed1 & 0x100)) {
             parent->d.carryingCapacityStandardDeviation = parent->readFloatField(editCapacityStdDev);
         }
-        if ((fieldsUsed1 & 0x200) && editRecolGroupSize.isModified()) {
+        if ((fieldsUsed1 & 0x200)) {
             parent->d.colonySize = parent->readIntField(editRecolGroupSize);
         }
-        if ((fieldsUsed1 & 0x1000) && editMix.isModified()) {
+        if ((fieldsUsed1 & 0x1000)) {
             parent->d.migrationRate[0] = parent->readFloatField(editMix);
         }
-        if ((fieldsUsed1 & 0x2000) && editMix2.isModified()) {
+        if ((fieldsUsed1 & 0x2000)) {
             parent->d.migrationRate[1] = parent->readFloatField(editMix2);
         }
         if (fieldsUsed1 & 0x10000) {parent->d.emigrationPattern = expandIndex(comboEmi_p.currentIndex(), parent->d.bEmigrationPattern);}
@@ -695,13 +695,13 @@ LociDialogBox::LociDialogBox(Altruist *parent) :
             if (i < parent->d.nLoci) {
                 parent->d.locusUsed[i] = checkboxLocusUsed[i].isChecked();
                 parent->d.dominance[i] = comboDominance[i].currentIndex();
-                if (editInitFraction[i].isModified()) {
+                if (true) {
                     parent->d.fg0[i] = parent->readFloatField(editInitFraction[i]);
                 }
-                if (editForwardMutation[i].isModified()) {
+                if (true) {
                     parent->d.murate[i][0] = parent->readFloatField(editForwardMutation[i]);
                 }
-                if (editBackMutation[i].isModified()) {
+                if (true) {
                     parent->d.murate[i][1] = parent->readFloatField(editBackMutation[i]);
                 }
             }
@@ -1178,25 +1178,25 @@ FitnessDialogBox::FitnessDialogBox(Altruist *parent) :
         // OK button. save parameters
         int i;
         for (i = 0; i < 8; i++) {
-            if (editIndividualFitness[i].isModified()) {
+            if (true) {
                 d->fit[i] = parent->readFloatField(editIndividualFitness[i]);
             }
         }
         for (i = 0; i < 4; i++) {
-            if (editIndividualFitness2[i].isModified()) {
+            if (true) {
                 d->fit2[i] = parent->readFloatField(editIndividualFitness2[i]);
             }
         }
         if (d->bSelModels) {
             d->selectionModel = expandIndex(comboSelModel.currentIndex(), d->bSelModels);
         }
-        if (editGrowthRate.isModified()) {
+        if (true) {
             d->growthRate = parent->readFloatField(editGrowthRate);
         }
-        if (editLeaderAdvantage.isModified()) {
+        if (true) {
             d->leaderAdvantage = parent->readFloatField(editLeaderAdvantage);
         }
-        if (editLeaderSelection.isModified()) {
+        if (true) {
             d->leaderSelection = parent->readFloatField(editLeaderSelection);
         }
 
@@ -1208,17 +1208,17 @@ FitnessDialogBox::FitnessDialogBox(Altruist *parent) :
             d->warPattern = expandIndex(comboWarPattern.currentIndex(), d->bWarPatterns);
         }
 
-        if (editSurviv.isModified()) {
+        if (true) {
             d->surviv = parent->readFloatField(editSurviv);
         }
-        if (editwarIntensity.isModified()) {
+        if (true) {
             d->warIntensity= parent->readFloatField(editwarIntensity);
         }
 
-        if (editHaystackPeriod.isModified()) {
+        if (true) {
             d->haystackPeriod = parent->readIntField(editHaystackPeriod);
         }
-        if (editMixingPeriod.isModified()) {
+        if (true) {
             d->mixingPeriod = parent->readIntField(editMixingPeriod);
         }
 
@@ -1243,12 +1243,12 @@ FitnessDialogBox::FitnessDialogBox(Altruist *parent) :
             if (pardef->name == nullptr || pardef->type == 0) continue;
             switch (pardef->type) {
             case 1:  // int
-                if (editModelSpecific[m].isModified()) {
+                if (true) {
                     d->modelspec_i[m] = parent->readIntField(editModelSpecific[m]);
                 }
                 break;
             case 2:  // float
-                if (editModelSpecific[m].isModified()) {
+                if (true) {
                     d->modelspec_f[m] = parent->readFloatField(editModelSpecific[m]);
                 }
                 break;
@@ -1396,20 +1396,20 @@ RunControlDialogBox::RunControlDialogBox(Altruist *parent) :
 
     connect(&okButton, &QPushButton::clicked, [this, parent]() {
         // OK button. save parameters
-        if (editRandomSeed.isModified()) {
+        if (true) {
             parent->d.seed = parent->readIntField(editRandomSeed);
         }
-        if (editMinGenerations.isModified()) {
+        if (true) {
             parent->d.minimumGenerations = parent->readIntField(editMinGenerations);
         }
-        if (editMaxGenerations.isModified()) {
+        if (true) {
             parent->d.maximumGenerations = parent->readIntField(editMaxGenerations);
         }
         parent->d.stopCriterion = expandIndex(comboStopCriterion.currentIndex(), parent->d.bStopCriterionUsed);
-        if (editCriterionDegree.isModified()) {
+        if (true) {
             parent->d.stopCriterionDegree = parent->readFloatField(editCriterionDegree);
         }
-        if (editDelay.isModified()) {
+        if (true) {
             parent->d.delayms = parent->readIntField(editDelay);
         }
 
@@ -1420,13 +1420,13 @@ RunControlDialogBox::RunControlDialogBox(Altruist *parent) :
             parent->d.sweepsUsed |= int(s != loopUnused) << isweep;
             parent->d.sweepParameter[isweep] = expandIndex(comboParameterToSweep[isweep].currentIndex(), enableSweepParameter);
 
-            if (editStartValue[isweep].isModified()) {
+            if (true) {
                 parent->d.sweepStartValue[isweep] = parent->readFloatField(editStartValue[isweep]);
             }
-            if (editEndValue[isweep].isModified()) {
+            if (true) {
                 parent->d.sweepEndValue[isweep] = parent->readFloatField(editEndValue[isweep]);
             }
-            if (editStep[isweep].isModified()) {
+            if (true) {
                 parent->d.sweepStep[isweep] = parent->readFloatField(editStep[isweep]);
             }
             // check for duplicate parameter
@@ -1626,13 +1626,13 @@ DataOutputDialogBox::DataOutputDialogBox(Altruist *parent) :
     connect(&okButton, &QPushButton::clicked, [this, parent]() {
         // OK button. save parameters
         Worker * worker = parent->worker;
-        if (editTitle.isModified()) {
+        if (true) {
             parent->d.outputTitle = editTitle.text();
         }
-        if (editOutputInterval.isModified()) {
+        if (true) {
             parent->d.fileOutInterval = parent->readIntField(editOutputInterval);
         }
-        if (editSteadyStateAfter.isModified()) {
+        if (true) {
             parent->d.fileOutSteadyState = parent->readIntField(editSteadyStateAfter);
         }
         parent->d.bOutOptions &= ~0xFFFFF;

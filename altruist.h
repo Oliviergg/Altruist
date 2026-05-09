@@ -12,9 +12,21 @@
 ******************************************************************************/
 
 #pragma once
-#include "random.h"
 
-#ifdef _MSC_VER 
+// Pull in the Qt declarations referenced below (QMainWindow, QMenu, QAction,
+// QString, QLineEdit, Q_OBJECT...) so the moc-generated translation units
+// compile even though they don't include stdafx.h.
+#include <QObject>
+#include <QtWidgets/QMainWindow>
+#include <QtWidgets>
+#include <QFile>
+#include <QElapsedTimer>
+#include "ui_altruist.h"
+
+#include "random.h"
+#include "parameterloop.h"
+
+#ifdef _MSC_VER
 #define strcasecmp _stricmp
 #endif
 

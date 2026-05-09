@@ -14,6 +14,14 @@
 #pragma once
 #include <inttypes.h>
 #include <stdio.h>
+
+// Map MSVC-only sprintf_s to portable snprintf on other compilers.
+// All call sites pass a stack-allocated char array as the first argument,
+// so sizeof(buf) yields the buffer size.
+#ifndef _MSC_VER
+#define sprintf_s(buf, ...) snprintf((buf), sizeof(buf), __VA_ARGS__)
+#endif
+
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets>
 #include <QtWidgets/QApplication>

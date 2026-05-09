@@ -1,0 +1,79 @@
+[Altruist version 3.003 parameter file]
+# 64x64 grid, quadratic topology (4 neighbours), classic Hamiltonian-style
+# group-selection setup. Within any group egoists win (free-rider advantage),
+# but altruistic groups have higher mean fitness and lower extinction rate,
+# so altruism can spread by between-group selection if migration is low.
+# Tweak migrationRate or the cost (fit[2]) to see the threshold flip.
+
+[Model]
+model=Island model
+
+[Geography]
+totalArea=100
+maxNumGroups=4096            # 64 x 64 grid -> exactly maxIslandsShown
+maxPerGroup=100
+carryingCapacity=100, 100
+carryingCapacityStandardDeviation=0
+maxTerritoryArea=0
+minTerritoryArea=0
+minGroupSize=2
+recolonizationGroupSize=4
+
+[Migration]
+# 0.005 -> 0.5 percent of individuals migrate per generation. Low enough
+# to keep spatial structure (clusters of like genotypes), high enough to
+# seed altruism into neighbouring groups.
+migrationRate=0.005, 0.005
+emigrationPattern=0
+immigrationPattern=2
+recolonizationPattern=1
+migrationTopology=2          # 2 = quadratic (N, S, E, W neighbours)
+
+[Loci]
+locusUsed=1, 0, 0, 0
+dominance=0, 0, 0, 0
+initialFractionOfMutant=0.5, 0, 0, 0    # 50/50 so dynamics show from gen 1
+mutationRates=0.0005, 0.0005, 0, 0, 0, 0, 0, 0
+
+[Individual fitness]
+# fit[0]: egoist   among egoists   -> 1.00 (baseline)
+# fit[1]: egoist   among altruists -> 1.10 (free-rider, gets benefit, no cost)
+# fit[2]: altruist among egoists   -> 0.90 (pays cost, no return)
+# fit[3]: altruist among altruists -> 1.00 (mutual benefit cancels cost)
+# Within any single group this is a Prisoner's Dilemma: egoists always win.
+individualFitness=1.0, 1.1, 0.9, 1.0, 1.0, 1.1, 0.9, 1.0
+extraLociFitness=1, 1, 1, 1
+growthRate=2
+selectionModel=0
+
+[Group properties]
+# Altruistic groups survive better. Combined with the individual PD above,
+# this is the classic between-group vs within-group selection trade-off.
+survivalRate=0.9
+warIntensity=0
+groupExtinctionRates=0.02, 0.02, 0.02, 0.02   # higher -> stronger group selection
+extinctionPattern=0
+warPattern=0
+groupFitnessFunction=0
+groupFitnessCurvature=1
+leaderAdvantage=0
+leaderSelection=0
+haystackPeriod=0
+mixingPeriod=0
+
+[Run control]
+randomSeed=42
+minimumGenerations=10
+maximumGenerations=5000
+stopCriterion=0
+stopCriterionDegree=0
+delayScreen=30               # ms between frames -> ~33 gen / sec, watchable
+sweepsUsed=0
+sweepType=0, 0, 0
+sweepParameter=0, 0, 0
+sweepStartValue=0, 0, 0
+sweepEndValue=0, 0, 0
+sweepStep=0, 0, 0
+
+[Output control]
+fileOutputOptions=0

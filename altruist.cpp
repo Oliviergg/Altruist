@@ -55,7 +55,9 @@ Altruist::Altruist(QWidget *parent) :
     connect(worker, &Worker::resultReadySignal, this, &Altruist::resultReadySlot); // signal from worker to main
     workerThread.start();                                  // start message loop in worker thread
 
-    readParameterFile(lastParameterFile);                  // read last parameters from last.altru
+    if (QFile::exists(lastParameterFile)) {                // skip on first launch
+        readParameterFile(lastParameterFile);              // read last parameters from last.altru
+    }
     setupMenus();                                          // make menus
     graphicsView = new AltruistView(this);
 
@@ -162,8 +164,21 @@ void Altruist::initializeData() {
     d.bGroupPropertiesUsed = -1;
     d.bFitFunc = -1;
 
-    if (parameterFilePath.isEmpty()) parameterFilePath = QDir::currentPath();
-    if (lastParameterFile.isEmpty()) lastParameterFile = QDir::currentPath() + "/last.altru";    
+    // Pick a writable location for parameter files. On Windows when the
+    // app is launched from the project directory, QDir::currentPath() works,
+    // but on macOS / Linux when launched via Finder/`open`, CWD is "/" — so
+    // we fall back to QStandardPaths::AppLocalDataLocation, which resolves
+    // to e.g. ~/Library/Application Support/Altruist on macOS.
+    if (parameterFilePath.isEmpty()) {
+        QString cwd = QDir::currentPath();
+        if (cwd == "/" || cwd.isEmpty()) {
+            parameterFilePath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+            QDir().mkpath(parameterFilePath);
+        } else {
+            parameterFilePath = cwd;
+        }
+    }
+    if (lastParameterFile.isEmpty()) lastParameterFile = parameterFilePath + "/last.altru";
 }
 
 void Altruist::update() {

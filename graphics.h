@@ -13,6 +13,13 @@
 
 #pragma once
 
+// Pull in Qt declarations referenced below so the moc-generated TU compiles
+// without relying on stdafx.h being included first.
+#include <QtWidgets>
+
+class Altruist;
+struct AltruData;
+
 // values for graphicsType
 const int graphicsNone       = 0;                // no graphics display
 const int graphicsIslands    = 1;                // show 2-dimensionsl map of islands
@@ -20,11 +27,11 @@ const int graphicsTerritories= 2;                // show 2-dimensionsl map of gr
 const int graphicsLimits     = 3;                // show x-y map of limiting parameter ranges for altruism/egoism/polymorphism
 
 // other constants
-const int maxGeographicRows = 32;                // maximum number of rows to show in geographic map
-const int maxGeographicColumns = 32;             // maximum number of columns to show in geographic map
+const int maxGeographicRows = 64;                // maximum number of rows to show in geographic map
+const int maxGeographicColumns = 64;             // maximum number of columns to show in geographic map
 const int maxIslandsShown = maxGeographicRows * maxGeographicColumns; // maximum number of islands to show in geographic map
 const int gridUnit = 32;                         // distance between islands on graphic display
-const int maxPolygons = 1024;                    // maximum number of polygons to draw
+const int maxPolygons = maxIslandsShown;         // maximum number of polygons to draw (territory map = 1 polygon per group)
 const int maxTextItems = 64;                     // maximum number of texts to draq
 const int xAxisLength = 256;                     // length of x axis in parameter map
 const int yAxisLength = 256;                     // length of y axis in parameter map

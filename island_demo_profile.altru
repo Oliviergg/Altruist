@@ -1,0 +1,67 @@
+[Altruist version 3.003 parameter file]
+# Profiling preset: 64x64 grid, no inter-frame sleep, 2000 generations.
+# Designed to give Instruments enough samples to find the hot path
+# in roughly 30-60 seconds of CPU time.
+
+[Model]
+model=Island model
+
+[Geography]
+totalArea=100
+maxNumGroups=4096
+maxPerGroup=100
+carryingCapacity=100, 100
+carryingCapacityStandardDeviation=0
+maxTerritoryArea=0
+minTerritoryArea=0
+minGroupSize=2
+recolonizationGroupSize=4
+
+[Migration]
+migrationRate=0.005, 0.005
+emigrationPattern=0
+immigrationPattern=2
+recolonizationPattern=1
+migrationTopology=2
+
+[Loci]
+locusUsed=1, 0, 0, 0
+dominance=0, 0, 0, 0
+initialFractionOfMutant=0.5, 0, 0, 0
+mutationRates=0.0005, 0.0005, 0, 0, 0, 0, 0, 0
+
+[Individual fitness]
+individualFitness=1.0, 1.1, 0.9, 1.0, 1.0, 1.1, 0.9, 1.0
+extraLociFitness=1, 1, 1, 1
+growthRate=2
+selectionModel=0
+
+[Group properties]
+survivalRate=0.9
+warIntensity=0
+groupExtinctionRates=0.02, 0.02, 0.02, 0.02
+extinctionPattern=0
+warPattern=0
+groupFitnessFunction=0
+groupFitnessCurvature=1
+leaderAdvantage=0
+leaderSelection=0
+haystackPeriod=0
+mixingPeriod=0
+
+[Run control]
+randomSeed=42
+minimumGenerations=10
+maximumGenerations=2000
+stopCriterion=0
+stopCriterionDegree=0
+delayScreen=0                # no UI throttling -> max generation rate
+sweepsUsed=0
+sweepType=0, 0, 0
+sweepParameter=0, 0, 0
+sweepStartValue=0, 0, 0
+sweepEndValue=0, 0, 0
+sweepStep=0, 0, 0
+
+[Output control]
+fileOutputOptions=0

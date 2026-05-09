@@ -117,7 +117,14 @@ void Altruist::readParameterFile(QString filename) {
     // loop through lines in file
     while (!file.atEnd()) {
         file.readLine(text, textlen);
-        if (text[0] == '[') continue;  // skip header
+        // Strip "# ..." trailing comment. '#' is never a legitimate
+        // character in a parameter name or numeric value, so we can
+        // truncate at the first '#' regardless of position.
+        if (char * hash = strchr(text, '#')) *hash = 0;
+        // Skip blank lines and section headers
+        char * first = text;
+        while (*first && *first <= ' ') first++;
+        if (*first == 0 || *first == '[') continue;
         sep = strchr(text, '=');
         if (sep == nullptr) continue;
         *sep = 0;                      // end first token

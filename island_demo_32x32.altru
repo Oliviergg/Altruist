@@ -1,11 +1,5 @@
 [Altruist version 3.003 parameter file]
 
-# 32x32 grid, quadratic topology (4 neighbours), classic Hamiltonian-style
-# group-selection setup. Within any group egoists win (free-rider advantage),
-# but altruistic groups have higher mean fitness and lower extinction rate,
-# so altruism can spread by between-group selection if migration is low.
-# Tweak migrationRate or the cost (fit[2]) to see the threshold flip.
-
 [Model]
 model=Island model
 
@@ -21,40 +15,27 @@ minGroupSize=2
 recolonizationGroupSize=4
 
 [Migration]
-# 0.005 = 0.5% of individuals migrate per generation. Low enough to keep
-# spatial structure (clusters of like genotypes), high enough to seed
-# altruism into neighbouring groups.
 migrationRate=0.005, 0.005
 emigrationPattern=0
 immigrationPattern=2
 recolonizationPattern=1
-# 2 = quadratic (N, S, E, W neighbours)
 migrationTopology=2
 
 [Loci]
 locusUsed=1, 0, 0, 0
 dominance=0, 0, 0, 0
-# Start at 50/50 so dynamics are visible from generation 1
 initialFractionOfMutant=0.5, 0, 0, 0
 mutationRates=0.0005, 0.0005, 0, 0, 0, 0, 0, 0
 
 [Individual fitness]
-# fit[0]: egoist   among egoists   = 1.00 baseline
-# fit[1]: egoist   among altruists = 1.10 (free-rider gets benefit, no cost)
-# fit[2]: altruist among egoists   = 0.90 (pays cost, no return)
-# fit[3]: altruist among altruists = 1.00 (mutual benefit cancels cost)
-# This is a Prisoner's Dilemma at the individual level.
 individualFitness=1.0, 1.1, 0.9, 1.0, 1.0, 1.1, 0.9, 1.0
 extraLociFitness=1, 1, 1, 1
 growthRate=2
 selectionModel=0
 
 [Group properties]
-# Altruistic groups survive better. Combined with the individual PD above,
-# this is the classic between-group vs within-group selection trade-off.
 survivalRate=0.9
 warIntensity=0
-# Higher base extinction rate means group selection acts more strongly.
 groupExtinctionRates=0.02, 0.02, 0.02, 0.02
 extinctionPattern=0
 warPattern=0
@@ -71,7 +52,6 @@ minimumGenerations=10
 maximumGenerations=5000
 stopCriterion=0
 stopCriterionDegree=0
-# 30 ms between frames -> ~33 generations per second, easy to watch
 delayScreen=30
 sweepsUsed=0
 sweepType=0, 0, 0

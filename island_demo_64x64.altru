@@ -1,5 +1,5 @@
 [Altruist version 3.003 parameter file]
-# 32x32 grid, quadratic topology (4 neighbours), classic Hamiltonian-style
+# 64x64 grid, quadratic topology (4 neighbours), classic Hamiltonian-style
 # group-selection setup. Within any group egoists win (free-rider advantage),
 # but altruistic groups have higher mean fitness and lower extinction rate,
 # so altruism can spread by between-group selection if migration is low.
@@ -10,7 +10,7 @@ model=Island model
 
 [Geography]
 totalArea=100
-maxNumGroups=1024            # 32 x 32 grid -> exactly maxIslandsShown
+maxNumGroups=4096            # 64 x 64 grid -> exactly maxIslandsShown
 maxPerGroup=100
 carryingCapacity=100, 100
 carryingCapacityStandardDeviation=0

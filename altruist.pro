@@ -16,6 +16,14 @@ CONFIG   += c++17
 TARGET    = Altruist
 TEMPLATE  = app
 
+# All build artefacts go under build/qt/. Keeps the repo root clean and
+# matches the WASM build, whose outputs land under build/wasm/.
+OBJECTS_DIR = build/qt/obj
+MOC_DIR     = build/qt/moc
+UI_DIR      = build/qt/ui
+RCC_DIR     = build/qt/rcc
+DESTDIR     = build/qt/bin
+
 # Explicit source list. Avoid wildcards: qmake generates moc_*.cpp /
 # qrc_*.cpp / ui_*.h itself, and a glob would pick those up a second
 # time and produce duplicate-symbol link errors.

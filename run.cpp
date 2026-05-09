@@ -14,7 +14,7 @@
 
 #include "stdafx.h"
 
-
+#ifndef WASM_BUILD
 void Altruist::run() {
     // start button pressed
     int state = d.sweepsUsed ? d.sweepState : d.runState;
@@ -360,6 +360,7 @@ void Worker::waitForScreen() {
         if (++n > 20) break;                     // wait max 20 ms
     }
 }
+#endif // !WASM_BUILD
 
 void statisticsInit0(AltruData * d) {
     // reset statistics counters before simulation start

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Altruist — POC WebAssembly</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 1.5rem; max-width: 860px; }
+  h1 { margin: 0 0 0.5rem; }
+  p.lead { color: #555; margin-top: 0; }
+  .controls { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin: 1rem 0; }
+  button { padding: 0.4rem 0.9rem; }
+  label { font-size: 0.9rem; }
+  canvas { border: 1px solid #888; image-rendering: pixelated; background: #111; display: block; }
+  .stats { margin-top: 0.75rem; font-family: ui-monospace, monospace; font-size: 0.9rem; line-height: 1.5; }
+  .stats span { display: inline-block; min-width: 8rem; }
+  .legend { font-size: 0.8rem; color: #555; margin-top: 0.5rem; }
+  .legend i { display: inline-block; width: 12px; height: 12px; vertical-align: middle; border: 1px solid #888; }
+</style>
+</head>
+<body>
+
+<h1>Altruist — POC WebAssembly</h1>
+<p class="lead">
+  Simulation du modèle <em>Island</em> compilée en WASM depuis le code C++ d'origine.
+  Aucune dépendance Qt ; tout tourne dans le navigateur.
+</p>
+
+<div class="controls">
+  <label>Côté grille
+    <input id="gridSide" type="number" value="16" min="2" max="32" step="1" style="width: 4rem">
+  </label>
+  <label>Seed
+    <input id="seed" type="number" value="1" style="width: 5rem">
+  </label>
+  <button id="reset">Init / Reset</button>
+  <button id="step1">+ 1 gen</button>
+  <button id="step100">+ 100 gen</button>
+  <button id="run" disabled>Run</button>
+  <button id="pause" disabled>Pause</button>
+</div>
+
+<canvas id="cv" width="512" height="512"></canvas>
+
+<div class="legend">
+  Couleur = fraction d'altruistes dans le groupe
+  (<i style="background:#222"></i> vide /
+  <i style="background:#a33"></i> 100% égoïstes /
+  <i style="background:#33a"></i> 100% altruistes).
+</div>
+
+<div class="stats">
+  <div><span>Génération:</span><b id="gen">—</b></div>
+  <div><span>Population totale:</span><b id="pop">—</b></div>
+  <div><span>Groupes habités:</span><b id="inh">—</b></div>
+  <div><span>Fraction altruisme:</span><b id="frac">—</b></div>
+  <div><span>État simulation:</span><b id="state">—</b></div>
+</div>
+
+<script src="altruist.js"></script>
+<script>
+(async () => {
+  const Module = await AltruistModule();
+
+  // C functions wrapped for JS.
+  const fn = {
+    init: Module.cwrap('wasm_init', 'number', ['number','number','number']),
+    step: Module.cwrap('wasm_step', 'number', ['number']),
+    maxIslands: Module.cwrap('wasm_get_max_islands', 'number', []),
+    rowLength: Module.cwrap('wasm_get_row_length', 'number', []),
+    groupSize: Module.cwrap('wasm_get_group_size', 'number', []),
+    groupsPtr: Module.cwrap('wasm_get_groups_ptr', 'number', []),
+    generation: Module.cwrap('wasm_get_generation', 'number', []),
+    runState: Module.cwrap('wasm_get_run_state', 'number', []),
+    inhabited: Module.cwrap('wasm_get_inhabited_groups', 'number', []),
+    altrFrac: Module.cwrap('wasm_get_altruism_fraction', 'number', []),
+    totalPop: Module.cwrap('wasm_get_total_population', 'number', []),
+    popOffset: Module.cwrap('wasm_get_pop_offset', 'number', []),
+    altrOffset: Module.cwrap('wasm_get_altruism_offset', 'number', []),
+  };
+
+  const canvas = document.getElementById('cv');
+  const ctx = canvas.getContext('2d');
+
+  let runHandle = null;
+  let popOffset = 0, altrOffset = 0, groupSize = 0;
+
+  function reset() {
+    if (runHandle) { clearInterval(runHandle); runHandle = null; }
+    const side = parseInt(document.getElementById('gridSide').value, 10);
+    const seed = parseInt(document.getElementById('seed').value, 10);
+    fn.init(0, seed, side);
+    popOffset  = fn.popOffset();
+    altrOffset = fn.altrOffset();
+    groupSize  = fn.groupSize();
+    document.getElementById('run').disabled = false;
+    document.getElementById('pause').disabled = true;
+    draw();
+  }
+
+  function draw() {
+    const max = fn.maxIslands();
+    const rowLen = fn.rowLength();
+    const numRows = Math.ceil(max / rowLen);
+    const ptr = fn.groupsPtr();
+    const cellW = Math.floor(canvas.width / rowLen);
+    const cellH = Math.floor(canvas.height / numRows);
+
+    ctx.fillStyle = '#111';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const heap = Module.HEAP32;
+    for (let i = 0; i < max; i++) {
+      const base = (ptr + i * groupSize) >> 2;       // i32 index
+      const nn = heap[base + (popOffset >> 2)];      // population
+      const altrGenes = altrOffset >= 0 ? heap[base + (altrOffset >> 2)] : 0;
+      const totalGenes = nn * 2;
+      const x = (i % rowLen) * cellW;
+      const y = Math.floor(i / rowLen) * cellH;
+
+      if (nn <= 0) {
+        ctx.fillStyle = '#222';
+      } else {
+        const f = totalGenes > 0 ? altrGenes / totalGenes : 0;
+        // egoist red -> altruist blue, intensity scales with population
+        const r = Math.round((1 - f) * 220);
+        const b = Math.round(f * 220);
+        ctx.fillStyle = `rgb(${r},40,${b})`;
+      }
+      ctx.fillRect(x, y, cellW - 1, cellH - 1);
+    }
+    document.getElementById('gen').textContent  = fn.generation();
+    document.getElementById('pop').textContent  = fn.totalPop();
+    document.getElementById('inh').textContent  = fn.inhabited();
+    document.getElementById('frac').textContent = fn.altrFrac().toFixed(4);
+    const states = ['idle','start','run','single_step','pause_next','pause','stop','error'];
+    document.getElementById('state').textContent = states[fn.runState()] || fn.runState();
+  }
+
+  function stepN(n) {
+    fn.step(n);
+    draw();
+  }
+
+  document.getElementById('reset').onclick = reset;
+  document.getElementById('step1').onclick = () => stepN(1);
+  document.getElementById('step100').onclick = () => stepN(100);
+  document.getElementById('run').onclick = () => {
+    if (runHandle) return;
+    runHandle = setInterval(() => stepN(5), 30);
+    document.getElementById('run').disabled = true;
+    document.getElementById('pause').disabled = false;
+  };
+  document.getElementById('pause').onclick = () => {
+    if (runHandle) { clearInterval(runHandle); runHandle = null; }
+    document.getElementById('run').disabled = false;
+    document.getElementById('pause').disabled = true;
+  };
+
+  reset();
+})();
+</script>
+</body>
+</html>

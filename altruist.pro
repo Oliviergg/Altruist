@@ -16,9 +16,35 @@ CONFIG   += c++17
 TARGET    = Altruist
 TEMPLATE  = app
 
-# Source files: every .cpp / .h at the project root
-SOURCES  += $$files(*.cpp)
-HEADERS  += $$files(*.h)
+# Explicit source list. Avoid wildcards: qmake generates moc_*.cpp /
+# qrc_*.cpp / ui_*.h itself, and a glob would pick those up a second
+# time and produce duplicate-symbol link errors.
+SOURCES = \
+    altruist.cpp \
+    data_file_out.cpp \
+    epistasis_model.cpp \
+    graphics.cpp \
+    habitat.cpp \
+    haystack_model.cpp \
+    island_model.cpp \
+    menus.cpp \
+    parameter_file_io.cpp \
+    parameterloop.cpp \
+    random.cpp \
+    regality_model.cpp \
+    run.cpp \
+    stdafx.cpp \
+    territoriality_model.cpp \
+    wallenius.cpp
+
+HEADERS = \
+    altruist.h \
+    graphics.h \
+    habitat.h \
+    menus.h \
+    parameterloop.h \
+    random.h \
+    stdafx.h
 
 # Qt Designer form
 FORMS    += altruist.ui
@@ -39,4 +65,9 @@ macx|unix:!macx {
 macx {
     # Sensible deployment target for recent Qt 6 releases
     QMAKE_MACOSX_DEPLOYMENT_TARGET = 11.0
+
+    # Keep -O2 (qmake default) and add -g so Instruments / xctrace can
+    # resolve symbols. Frame pointers help the call-stack sampler.
+    QMAKE_CXXFLAGS_RELEASE += -g -fno-omit-frame-pointer
+    QMAKE_LFLAGS_RELEASE   += -g
 }

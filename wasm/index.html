@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Altruist — POC WebAssembly</title>
+<style>
+  :root { --border: #888; --muted: #666; --accent: #2466b8; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 1rem 1.5rem; max-width: 1200px; }
+  h1 { margin: 0 0 0.25rem; }
+  p.lead { color: var(--muted); margin-top: 0; }
+  .layout { display: grid; grid-template-columns: 1fr 360px; gap: 1.5rem; align-items: start; }
+  .panel { border: 1px solid var(--border); border-radius: 6px; padding: 0.8rem 1rem; background: #fafafa; }
+  .panel h2 { font-size: 0.95rem; margin: 0 0 0.5rem; text-transform: uppercase; color: var(--muted); letter-spacing: 0.05em; }
+  details { border: 1px solid #ddd; border-radius: 4px; padding: 0.4rem 0.6rem; margin-bottom: 0.5rem; background: white; }
+  details > summary { cursor: pointer; font-weight: 600; outline: none; }
+  details[open] > summary { margin-bottom: 0.5rem; }
+  .row { display: grid; grid-template-columns: 1fr 110px; gap: 0.5rem; align-items: center; margin: 0.25rem 0; font-size: 0.85rem; }
+  .row.array { grid-template-columns: 1fr; }
+  .row label { color: #333; }
+  .row input { padding: 0.2rem 0.35rem; font-family: ui-monospace, monospace; font-size: 0.85rem; width: 100%; box-sizing: border-box; }
+  .arr { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 0.25rem; margin-top: 0.2rem; }
+  .arr label { font-size: 0.75rem; color: var(--muted); display: flex; flex-direction: column; }
+  .controls { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.7rem; align-items: center; }
+  button { padding: 0.45rem 0.9rem; cursor: pointer; }
+  button.primary { background: var(--accent); color: white; border: 1px solid var(--accent); border-radius: 4px; }
+  select { padding: 0.4rem; font-size: 0.9rem; }
+  canvas { border: 1px solid var(--border); image-rendering: pixelated; background: #111; display: block; max-width: 100%; }
+  .legend { font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem; }
+  .legend i { display: inline-block; width: 12px; height: 12px; vertical-align: middle; border: 1px solid var(--border); }
+  .stats { margin-top: 0.75rem; font-family: ui-monospace, monospace; font-size: 0.85rem; line-height: 1.6; background: white; padding: 0.6rem 0.8rem; border: 1px solid #ddd; border-radius: 4px; }
+  .stats span { display: inline-block; min-width: 9rem; color: var(--muted); }
+  .model-desc { font-size: 0.8rem; color: var(--muted); margin-top: 0.3rem; line-height: 1.4; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<h1>Altruist — POC WebAssembly</h1>
+<p class="lead">Simulation Agner Fog compilée en WASM depuis le code C++ d'origine, sans Qt.</p>
+
+<div class="layout">
+
+  <!-- Left: simulation viewport -->
+  <div>
+    <div class="controls">
+      <select id="modelPicker"></select>
+      <button id="reset" class="primary">Init / Reset</button>
+      <button id="step1">+ 1 gen</button>
+      <button id="step100">+ 100 gen</button>
+      <button id="run" disabled>Run</button>
+      <button id="pause" disabled>Pause</button>
+    </div>
+    <div class="model-desc" id="modelDesc"></div>
+    <canvas id="cv" width="512" height="512" style="margin-top: 0.5rem"></canvas>
+    <div class="legend">
+      Couleur = fraction d'altruistes dans le groupe
+      (<i style="background:#222"></i> vide /
+       <i style="background:#a83333"></i> 100 % égoïstes /
+       <i style="background:#3344b8"></i> 100 % altruistes).
+    </div>
+    <div class="stats">
+      <div><span>Génération:</span><b id="gen">—</b></div>
+      <div><span>Population totale:</span><b id="pop">—</b></div>
+      <div><span>Groupes habités:</span><b id="inh">—</b></div>
+      <div><span>Fraction altruisme:</span><b id="frac">—</b></div>
+      <div><span>État:</span><b id="state">—</b></div>
+    </div>
+  </div>
+
+  <!-- Right: parameter forms -->
+  <div class="panel">
+    <h2>Paramètres</h2>
+    <p style="font-size: 0.8rem; color: var(--muted); margin: 0.25rem 0 0.6rem;">
+      Édite puis clique « Init / Reset » pour relancer.
+    </p>
+    <div id="forms"></div>
+    <button id="resetParams" style="margin-top: 0.5rem">Restaurer les valeurs par défaut</button>
+  </div>
+
+</div>
+
+<script src="altruist.js"></script>
+<script>
+(async () => {
+  const Module = await AltruistModule();
+
+  const C = {
+    modelCount:  Module.cwrap('wasm_get_model_count', 'number', []),
+    modelName:   Module.cwrap('wasm_get_model_name', 'string', ['number']),
+    modelDesc:   Module.cwrap('wasm_get_model_description', 'string', ['number']),
+    findModel:   Module.cwrap('wasm_find_model', 'number', ['string']),
+
+    paramCount:  Module.cwrap('wasm_param_count', 'number', []),
+    paramSection:Module.cwrap('wasm_param_section', 'string', ['number']),
+    paramName:   Module.cwrap('wasm_param_name', 'string', ['number']),
+    paramLabel:  Module.cwrap('wasm_param_label', 'string', ['number']),
+    paramType:   Module.cwrap('wasm_param_type', 'number', ['number']),
+    paramArrSz:  Module.cwrap('wasm_param_array_size', 'number', ['number']),
+
+    setInt:   Module.cwrap('wasm_set_int',   'number', ['string', 'number', 'number']),
+    getInt:   Module.cwrap('wasm_get_int',   'number', ['string', 'number']),
+    setFloat: Module.cwrap('wasm_set_float', 'number', ['string', 'number', 'number']),
+    getFloat: Module.cwrap('wasm_get_float', 'number', ['string', 'number']),
+    setBool:  Module.cwrap('wasm_set_bool',  'number', ['string', 'number', 'number']),
+    getBool:  Module.cwrap('wasm_get_bool',  'number', ['string', 'number']),
+
+    resetDefaults: Module.cwrap('wasm_reset_defaults', null, []),
+    initModel:     Module.cwrap('wasm_init_model', 'number', ['number','number']),
+    step:          Module.cwrap('wasm_step', 'number', ['number']),
+
+    maxIslands: Module.cwrap('wasm_get_max_islands', 'number', []),
+    rowLength:  Module.cwrap('wasm_get_row_length', 'number', []),
+    groupSize:  Module.cwrap('wasm_get_group_size', 'number', []),
+    groupsPtr:  Module.cwrap('wasm_get_groups_ptr', 'number', []),
+    generation: Module.cwrap('wasm_get_generation', 'number', []),
+    runState:   Module.cwrap('wasm_get_run_state', 'number', []),
+    inhabited:  Module.cwrap('wasm_get_inhabited_groups', 'number', []),
+    altrFrac:   Module.cwrap('wasm_get_altruism_fraction', 'number', []),
+    totalPop:   Module.cwrap('wasm_get_total_population', 'number', []),
+    popOffset:  Module.cwrap('wasm_get_pop_offset', 'number', []),
+    altrOffset: Module.cwrap('wasm_get_altruism_offset', 'number', []),
+  };
+
+  const P_INT = 1, P_FLOAT = 2, P_BOOL = 3;
+
+  // -- Model dropdown -----------------------------------------------------
+  const modelPicker = document.getElementById('modelPicker');
+  const modelDesc   = document.getElementById('modelDesc');
+  for (let i = 0; i < C.modelCount(); i++) {
+    const opt = document.createElement('option');
+    opt.value = i; opt.textContent = C.modelName(i);
+    modelPicker.appendChild(opt);
+  }
+  const islandIdx = C.findModel('Island model');
+  if (islandIdx >= 0) modelPicker.value = islandIdx;
+  function refreshDesc() { modelDesc.textContent = C.modelDesc(parseInt(modelPicker.value, 10)) || ''; }
+  modelPicker.addEventListener('change', refreshDesc);
+  refreshDesc();
+
+  // -- Parameter forms (driven by C++ metadata) ---------------------------
+  const formsRoot = document.getElementById('forms');
+
+  function paramSetters(type) {
+    if (type === P_FLOAT) return { get: C.getFloat, set: (n,i,v) => C.setFloat(n,i,parseFloat(v)) };
+    if (type === P_BOOL)  return { get: C.getBool,  set: (n,i,v) => C.setBool(n,i,v?1:0) };
+    return                       { get: C.getInt,   set: (n,i,v) => C.setInt(n,i,parseInt(v,10)) };
+  }
+
+  function buildForms() {
+    formsRoot.innerHTML = '';
+    const sections = new Map();
+
+    for (let i = 0; i < C.paramCount(); i++) {
+      const section = C.paramSection(i);
+      if (!sections.has(section)) {
+        const det = document.createElement('details');
+        if (section === 'Geography' || section === 'Loci') det.open = true;
+        const sum = document.createElement('summary');
+        sum.textContent = section;
+        det.appendChild(sum);
+        sections.set(section, det);
+        formsRoot.appendChild(det);
+      }
+      const det = sections.get(section);
+
+      const name  = C.paramName(i);
+      const label = C.paramLabel(i);
+      const type  = C.paramType(i);
+      const sz    = C.paramArrSz(i);
+      const sg    = paramSetters(type);
+
+      if (sz === 1) {
+        const row = document.createElement('div');
+        row.className = 'row';
+        const lab = document.createElement('label');
+        lab.textContent = label; lab.title = name;
+        const input = document.createElement('input');
+        if (type === P_BOOL) {
+          input.type = 'checkbox';
+          input.checked = !!sg.get(name, 0);
+          input.addEventListener('change', () => sg.set(name, 0, input.checked));
+        } else {
+          input.type = 'number';
+          if (type === P_FLOAT) input.step = 'any';
+          input.value = sg.get(name, 0);
+          input.addEventListener('change', () => sg.set(name, 0, input.value));
+        }
+        row.appendChild(lab); row.appendChild(input);
+        det.appendChild(row);
+      } else {
+        const row = document.createElement('div');
+        row.className = 'row array';
+        const lab = document.createElement('label');
+        lab.textContent = `${label}  [${sz} valeurs]`; lab.title = name;
+        const arr = document.createElement('div'); arr.className = 'arr';
+        for (let k = 0; k < sz; k++) {
+          const w = document.createElement('label');
+          const tag = document.createElement('span'); tag.textContent = `[${k}]`;
+          const inp = document.createElement('input');
+          if (type === P_BOOL) {
+            inp.type = 'checkbox';
+            inp.checked = !!sg.get(name, k);
+            inp.addEventListener('change', () => sg.set(name, k, inp.checked));
+          } else {
+            inp.type = 'number';
+            if (type === P_FLOAT) inp.step = 'any';
+            inp.value = sg.get(name, k);
+            inp.addEventListener('change', () => sg.set(name, k, inp.value));
+          }
+          w.appendChild(tag); w.appendChild(inp);
+          arr.appendChild(w);
+        }
+        row.appendChild(lab); row.appendChild(arr);
+        det.appendChild(row);
+      }
+    }
+  }
+
+  C.resetDefaults();
+  buildForms();
+
+  // -- Canvas -------------------------------------------------------------
+  const canvas = document.getElementById('cv');
+  const ctx = canvas.getContext('2d');
+  let runHandle = null;
+  let popOffset = 0, altrOffset = 0, groupSize = 0;
+
+  function reset() {
+    if (runHandle) { clearInterval(runHandle); runHandle = null; }
+    const iModel = parseInt(modelPicker.value, 10);
+    // gridSide=0 means: use the maxIslands the user just set in the form.
+    C.initModel(iModel, 0);
+    popOffset  = C.popOffset();
+    altrOffset = C.altrOffset();
+    groupSize  = C.groupSize();
+    document.getElementById('run').disabled = false;
+    document.getElementById('pause').disabled = true;
+    draw();
+  }
+
+  function draw() {
+    const max = C.maxIslands();
+    const rowLen = C.rowLength() || Math.ceil(Math.sqrt(max));
+    const numRows = Math.ceil(max / rowLen);
+    const ptr = C.groupsPtr();
+    const cellW = Math.max(1, Math.floor(canvas.width / rowLen));
+    const cellH = Math.max(1, Math.floor(canvas.height / numRows));
+
+    ctx.fillStyle = '#111';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const heap = Module.HEAP32;
+    for (let i = 0; i < max; i++) {
+      const base = (ptr + i * groupSize) >> 2;
+      const nn = heap[base + (popOffset >> 2)];
+      const altrGenes = altrOffset >= 0 ? heap[base + (altrOffset >> 2)] : 0;
+      const totalGenes = nn * 2;
+      const x = (i % rowLen) * cellW;
+      const y = Math.floor(i / rowLen) * cellH;
+
+      if (nn <= 0) {
+        ctx.fillStyle = '#222';
+      } else {
+        const f = totalGenes > 0 ? altrGenes / totalGenes : 0;
+        const r = Math.round((1 - f) * 200 + 30);
+        const b = Math.round(f * 200 + 30);
+        ctx.fillStyle = `rgb(${r},50,${b})`;
+      }
+      ctx.fillRect(x, y, cellW - 1, cellH - 1);
+    }
+    document.getElementById('gen').textContent  = C.generation();
+    document.getElementById('pop').textContent  = C.totalPop();
+    document.getElementById('inh').textContent  = C.inhabited();
+    document.getElementById('frac').textContent = C.altrFrac().toFixed(4);
+    const states = ['idle','start','run','single_step','pause_next','pause','stop','error'];
+    document.getElementById('state').textContent = states[C.runState()] ?? C.runState();
+  }
+
+  document.getElementById('reset').onclick = reset;
+  document.getElementById('step1').onclick = () => { C.step(1); draw(); };
+  document.getElementById('step100').onclick = () => { C.step(100); draw(); };
+  document.getElementById('run').onclick = () => {
+    if (runHandle) return;
+    runHandle = setInterval(() => { C.step(5); draw(); }, 30);
+    document.getElementById('run').disabled = true;
+    document.getElementById('pause').disabled = false;
+  };
+  document.getElementById('pause').onclick = () => {
+    if (runHandle) { clearInterval(runHandle); runHandle = null; }
+    document.getElementById('run').disabled = false;
+    document.getElementById('pause').disabled = true;
+  };
+  document.getElementById('resetParams').onclick = () => {
+    C.resetDefaults();
+    buildForms();
+  };
+
+  reset();
+})();
+</script>
+</body>
+</html>

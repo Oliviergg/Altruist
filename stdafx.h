@@ -22,6 +22,14 @@
 #define sprintf_s(buf, ...) snprintf((buf), sizeof(buf), __VA_ARGS__)
 #endif
 
+#ifdef WASM_BUILD
+#include "qt_shim.h"
+#include <functional>
+#include "random.h"
+#include "parameterloop.h"
+#include "altruist.h"
+#include "habitat.h"
+#else
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets>
 #include <QtWidgets/QApplication>
@@ -32,3 +40,4 @@
 #include "menus.h"
 #include "graphics.h"
 #include "habitat.h"
+#endif
